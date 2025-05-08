@@ -53,17 +53,19 @@ The weight matrices are initialized with a Gaussian distribution,
 
 $$A_{ij} \thicksim \mathcal{N}\left(0,\frac{1}{\sqrt{D+K}}\right)$$
 
-and have their diagonals set to zero. Unlike the deterministic training of the Hopfield network, the Boltzmann machine has a stochastic training passes where the parameters are optimised through a gradient-descent-like process.
+and have their diagonals set to zero. Unlike the deterministic training of the Hopfield network, the Boltzmann machine has a gradient-descent-like process.
 
-The inference process is very similar to the Hopfield network, but with a more stochastic update rule,
+#### Inference
+
+Inference is very similar to the Hopfield network, but with a more stochastic update rule,
 
 $$v_i= \begin{cases}
-1, &         \text{with probability } \sigma(\frac{W_i\cdot\vec{h} + A_i\cdot\vec{v} + a_i}{T})\\
+1, &         \text{with probability } \sigma\left(\frac{1}{T}\left(\vec{h}^\top W_i + \vec{v}^\top A_i + a_i\right)\right)\\
 0 &         
 \end{cases}$$
 
 $$h_j= \begin{cases}
-1, &         \text{with probability } \sigma(\frac{W_{:,j}\cdot\vec{v} + B_j\cdot\vec{h} + b_j}{T})\\
+1, &         \text{with probability } \sigma\left(\frac{1}{T}\left(\vec{v}^\top W_{,j} + \vec{h}^\top B_j + b_j\right)\right)\\
 0 &         
 \end{cases}$$
 
