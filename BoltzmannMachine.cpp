@@ -138,9 +138,9 @@ void BoltzmannMachine::randomize_state() {
     bernoulli_distribution random(0.5);
 
     for (double &i: v)
-        i = random(gen) ? 1 : 0;
+        i = random(gen) ? 1 : -1;
     for (double &i: h)
-        i = random(gen) ? 1 : 0;
+        i = random(gen) ? 1 : -1;
 }
 
 void BoltzmannMachine::update_state(int steps) {
@@ -192,6 +192,12 @@ void BoltzmannMachine::save(const std::string &filename) const {
     file << A.rows() << ' ' << B.rows() << endl;
     file << A << B << W << a << b << endl;
     file.close();
+}
+
+void BoltzmannMachine::save_png(const std::string &filename) const {
+    write_matrix_to_png(255 * normalize(A), filename + ".A.png");
+    write_matrix_to_png(255 * normalize(B), filename + ".B.png");
+    write_matrix_to_png(255 * normalize(W), filename + ".W.png");
 }
 
 void BoltzmannMachine::save_state(const std::string &filename) const {

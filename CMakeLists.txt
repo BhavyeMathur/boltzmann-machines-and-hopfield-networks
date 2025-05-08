@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(hopfield)
+project(main)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -9,7 +9,7 @@ include_directories(${CMAKE_SOURCE_DIR}/vendor/stb)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_executable(hopfield main.cpp
+add_executable(main main.cpp
                vendor/cnpy/cnpy.cpp
                HopfieldNetwork.cpp
                HopfieldNetwork.h

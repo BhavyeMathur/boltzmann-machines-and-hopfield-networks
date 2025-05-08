@@ -8,39 +8,62 @@
 using namespace std;
 
 int main() {
-    //    string path = "data/mnist/original_28x28/binary_digits_binary_pixels/x_train.npy";
-    //    auto data = (read_npy_file(path) * 2).array() - 1;
-    //    HopfieldNetwork model(data);
-    //    model.save("models/mnist.txt");
-    //    model.save_png("models/mnist.png");
-    //    HopfieldNetwork model("models/mnist.txt");  // load model
+    int option;
+    cout << "1. Train new Hopfield Network\n"
+            "2. Load & Run Hopfield Network\n"
+            "3. Train new Boltzmann Machine\n"
+            "4. Load & Run Boltzmann Machine\n";
+    cin >> option;
 
-    //    string path = "data/food/food.npy";
-    //    auto data = (read_npy_file(path) * 2).array() - 1;
-    //    HopfieldNetwork model(data);
-    //    model.save("models/food.txt");
-    //    model.save_png("models/food.png");
-    //
-    //    model.randomize_state();
-    //    for (int i = 0; i < 150; i++) {
-    //        model.update_state(30);
-    //        model.save_state(format("inference/output{}.png", i));
-    //    }
+    switch (option) {
+        case 1: {
+            string path = "data/food/food.npy";
+            auto data = (read_npy_file(path) * 2).array() - 1;
 
-    //    BoltzmannMachine model("models/food_bm.txt");
+            HopfieldNetwork model(data);
+            model.save("models/food.txt");
+            break;
+        }
 
-    BoltzmannMachine model(24 * 24, 0);
+        case 2: {
+            HopfieldNetwork model("models/food.txt");
+            model.save_png("models/food_hopfield.png");
 
-    string path = "data/food/food.npy";
-    auto data = (read_npy_file(path) * 2).array() - 1;
-    model.train(data, 50, 200, 0.005);
-    model.save("models/food_bm.txt");
+            model.randomize_state();
+            for (int i = 0; i < 150; i++) {
+                model.update_state(30);
+                model.save_state(format("inference/output{}.png", i));
+            }
+            break;
+        }
 
-    model.randomize_state();
-    for (int i = 0; i < 150; i++) {
-        model.update_state(30);
-        cout << "Energy: " << model.energy() << '\n';
-        model.save_state(format("inference/output{}.png", i));
+        case 3: {
+            BoltzmannMachine model(24 * 24, 16 * 16);
+
+            string path = "data/food/food.npy";
+            auto data = (read_npy_file(path) * 2).array() - 1;
+            model.train(data, 50, 250, 0.0001);
+            model.save("models/food_bm.txt");
+
+            break;
+        }
+
+        case 4: {
+            BoltzmannMachine model("models/food_bm.txt");
+            model.save_png("models/food_bm");
+
+            model.randomize_state();
+            for (int i = 0; i < 150; i++) {
+                model.update_state(20);
+                cout << "Energy: " << model.energy() << '\n';
+                model.save_state(format("inference/output{}.png", i));
+            }
+
+            break;
+        }
+
+        default:
+            exit(1);
     }
 
     return 0;

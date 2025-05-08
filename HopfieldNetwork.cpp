@@ -65,11 +65,7 @@ void HopfieldNetwork::save(const std::string &filename) const {
 }
 
 void HopfieldNetwork::save_png(const std::string &filename) const {
-    auto min = weights.minCoeff();
-    auto max = weights.maxCoeff();
-
-    auto image = (weights.array() - min) / ((max - min) / 255.0);
-    write_matrix_to_png(image, filename);
+    write_matrix_to_png(255 * normalize(weights), filename);
 }
 
 void HopfieldNetwork::save_state(const std::string &filename) const {

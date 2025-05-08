@@ -82,3 +82,10 @@ void load_vector_from_file(std::ifstream &file, Eigen::VectorXd &vector, int n) 
     for (int i = 0; i < n; i++)
         file >> vector[i];
 }
+
+Eigen::MatrixXd normalize(const Eigen::MatrixXd &matrix) {
+    auto min = matrix.minCoeff();
+    auto max = matrix.maxCoeff();
+
+    return (matrix.array() - min) / (max - min);
+}

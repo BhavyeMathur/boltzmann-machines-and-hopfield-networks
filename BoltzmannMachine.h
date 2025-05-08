@@ -19,6 +19,8 @@ public:
 
     void save(const std::string &filename) const;
 
+    void save_png(const std::string &filename) const;
+
     void save_state(const std::string &filename) const;
 
 private:
