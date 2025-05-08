@@ -16,6 +16,13 @@ BoltzmannMachine::BoltzmannMachine(int visible, int hidden)
         : v(visible), a(visible),
           h(hidden), b(hidden),
           A(visible, visible), B(hidden, hidden), W(visible, hidden) {
+    double stddev = 1.0 / sqrt(visible + hidden);
+    gaussian_initialize(A, 0, stddev);
+    gaussian_initialize(B, 0, stddev);
+    gaussian_initialize(W, 0, stddev);
+    gaussian_initialize(a, 0, stddev);
+    gaussian_initialize(b, 0, stddev);
+
     A.diagonal().setZero();
     B.diagonal().setZero();
 }
@@ -30,11 +37,11 @@ BoltzmannMachine::BoltzmannMachine(const std::string &filename) {
     int visible, hidden;
     file >> visible >> hidden;
 
-    load_matrix_from_file(file, A, visible, visible);
-    load_matrix_from_file(file, B, hidden, hidden);
-    load_matrix_from_file(file, W, visible, hidden);
-    load_vector_from_file(file, a, visible);
-    load_vector_from_file(file, b, hidden);
+    load_from_file(file, A, visible, visible);
+    load_from_file(file, B, hidden, hidden);
+    load_from_file(file, W, visible, hidden);
+    load_from_file(file, a, visible);
+    load_from_file(file, b, hidden);
 
     v = VectorXd(visible);
     h = VectorXd(hidden);

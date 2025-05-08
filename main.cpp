@@ -39,10 +39,11 @@ int main() {
 
         case 3: {
             BoltzmannMachine model(24 * 24, 16 * 16);
+            model.save_png("models/food_bm");
 
             string path = "data/food/food.npy";
             auto data = (read_npy_file(path) * 2).array() - 1;
-            model.train(data, 50, 250, 0.0001);
+            model.train(data, 50, 100, 0.01);
             model.save("models/food_bm.txt");
 
             break;
@@ -50,7 +51,6 @@ int main() {
 
         case 4: {
             BoltzmannMachine model("models/food_bm.txt");
-            model.save_png("models/food_bm");
 
             model.randomize_state();
             for (int i = 0; i < 150; i++) {

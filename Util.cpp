@@ -1,5 +1,6 @@
 #include "Util.h"
 
+#include <random>
 #include "stb_image_write.h"
 #include "cnpy.h"
 
@@ -68,7 +69,7 @@ Eigen::MatrixXd read_npy_file(const string &path) {
     exit(1);
 }
 
-void load_matrix_from_file(ifstream &file, Eigen::MatrixXd &matrix, int rows, int cols) {
+void load_from_file(ifstream &file, Eigen::MatrixXd &matrix, int rows, int cols) {
     matrix = Eigen::MatrixXd(rows, cols);
 
     for (int i = 0; i < rows; i++)
@@ -76,11 +77,30 @@ void load_matrix_from_file(ifstream &file, Eigen::MatrixXd &matrix, int rows, in
             file >> matrix(i, j);
 }
 
-void load_vector_from_file(std::ifstream &file, Eigen::VectorXd &vector, int n) {
+void load_from_file(std::ifstream &file, Eigen::VectorXd &vector, int n) {
     vector = Eigen::VectorXd(n);
 
-    for (int i = 0; i < n; i++)
-        file >> vector[i];
+    for (auto &i : vector)
+        file >> i;
+}
+
+void gaussian_initialize(Eigen::MatrixXd &matrix, double mean, double stddev) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<> dist(mean, stddev);
+
+    for (int i = 0; i < matrix.rows(); i++)
+        for (int j = 0; j < matrix.cols(); j++)
+            matrix(i, j) = dist(gen);
+}
+
+void gaussian_initialize(Eigen::VectorXd &vector, double mean, double stddev) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<> dist(mean, stddev);
+
+    for (auto &i : vector)
+        i = dist(gen);
 }
 
 Eigen::MatrixXd normalize(const Eigen::MatrixXd &matrix) {

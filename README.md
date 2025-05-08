@@ -1,11 +1,11 @@
-# Hopfield Network in C++
+# Boltzmann Machine & Hopfield Network in C++
 
 | ![](models/food.png) | ![](output/donut.gif)  | ![](output/burger.gif) |
 |----------------------|------------------------|------------------------|
 
-A simple C++ implementation of a Hopfield Network with Hebbian learning rules.
+A simple C++ implementation of a Hopfield Network with Hebbian learning rules and Generalised Boltzmann Machine with Contrastive Learning.
 
-### Mathematical Details
+### Hopfield Network
 
 We structure $n$ images with $p$ binary pixels each into an $n\times p$ matrix called $M\in\{-1,1\}^{n\times p}$ (memory). The goal of a Hopfield network with weights $W\in\mathbb{R}^{p\times p}$ is to sample a vector $\vec{s}\in\{-1,1\}^p$ from this data distribution to minimize the total energy $E$,
 

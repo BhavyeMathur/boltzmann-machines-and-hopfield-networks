@@ -23,7 +23,7 @@ HopfieldNetwork::HopfieldNetwork(const std::string &filename) {
     int n;
     file >> n;
 
-    load_matrix_from_file(file, weights, n, n);
+    load_from_file(file, weights, n, n);
 
     file.close();
 }
