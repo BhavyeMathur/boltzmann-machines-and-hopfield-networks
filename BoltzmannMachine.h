@@ -17,6 +17,8 @@ public:
 
     [[nodiscard]] double energy() const;
 
+    void set_temperature(double val);
+
     void save(const std::string &filename) const;
 
     void save_png(const std::string &filename) const;
@@ -24,6 +26,8 @@ public:
     void save_state(const std::string &filename) const;
 
 private:
+    double temperature = 1;
+
     Eigen::MatrixXd A;  // visible-to-visible weights
     Eigen::MatrixXd B;  // hidden-to-hidden weights
     Eigen::MatrixXd W;  // visible-to-hidden weights

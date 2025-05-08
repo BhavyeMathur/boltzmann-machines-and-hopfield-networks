@@ -17,11 +17,10 @@ BoltzmannMachine::BoltzmannMachine(int visible, int hidden)
           h(hidden), b(hidden),
           A(visible, visible), B(hidden, hidden), W(visible, hidden) {
     double stddev = 1.0 / sqrt(visible + hidden);
+    cout << stddev << '\n';
     gaussian_initialize(A, 0, stddev);
     gaussian_initialize(B, 0, stddev);
     gaussian_initialize(W, 0, stddev);
-    gaussian_initialize(a, 0, stddev);
-    gaussian_initialize(b, 0, stddev);
 
     A.diagonal().setZero();
     B.diagonal().setZero();
@@ -57,6 +56,8 @@ void BoltzmannMachine::train(const MatrixXd &data, int epochs, int steps, double
     VectorXd best_b;
     double best_energy = numeric_limits<double>::max();
 
+    std::mt19937 rng(std::random_device{}());
+
     for (int epoch = 0; epoch < epochs; epoch++) {
         // positive phase
 
@@ -68,6 +69,11 @@ void BoltzmannMachine::train(const MatrixXd &data, int epochs, int steps, double
 
         for (int row = 0; row < data.rows(); row++) {
             v = data.row(row);
+
+            for (int j = 0; j < h.size(); j++) {
+                double p = probability_of_hidden_on(j);
+                h[j] = bernoulli_distribution(p)(rng) ? 1 : -1;
+            }
 
             pos_A += v * v.transpose();
             pos_a += v;
@@ -179,14 +185,20 @@ double BoltzmannMachine::energy() const {
     return -(e1 + e2 + e3 + e4);
 }
 
+void BoltzmannMachine::set_temperature(double val) {
+    temperature = val;
+}
+
 double BoltzmannMachine::probability_of_visible_on(int i) const {
-    if (h.size() == 0)
-        return sigmoid(A.row(i).dot(v) + a[i]);
-    return sigmoid(W.row(i).dot(h) + A.row(i).dot(v) + a[i]);
+    double input = A.row(i).dot(v) + a[i];
+    if (h.size() != 0)
+        input += W.row(i).dot(h);
+    return sigmoid(input / temperature);
 }
 
 double BoltzmannMachine::probability_of_hidden_on(int j) const {
-    return sigmoid(W.col(j).dot(v) + B.row(j).dot(h) + b[j]);
+    double input = W.col(j).dot(v) + B.row(j).dot(h) + b[j];
+    return sigmoid(input / temperature);
 }
 
 void BoltzmannMachine::save(const std::string &filename) const {
@@ -212,6 +224,5 @@ void BoltzmannMachine::save_state(const std::string &filename) const {
     assert(n * n == v.rows());
 
     auto image = v.reshaped(n, n).transpose();
-
     write_matrix_to_rgb(image, filename);
 }

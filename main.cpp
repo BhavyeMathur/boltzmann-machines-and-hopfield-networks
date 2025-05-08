@@ -43,7 +43,7 @@ int main() {
 
             string path = "data/food/food.npy";
             auto data = (read_npy_file(path) * 2).array() - 1;
-            model.train(data, 50, 100, 0.01);
+            model.train(data, 200, 50, 0.01);
             model.save("models/food_bm.txt");
 
             break;
@@ -51,14 +51,15 @@ int main() {
 
         case 4: {
             BoltzmannMachine model("models/food_bm.txt");
+            model.set_temperature(5);
 
             model.randomize_state();
             for (int i = 0; i < 150; i++) {
                 model.update_state(20);
-                cout << "Energy: " << model.energy() << '\n';
                 model.save_state(format("inference/output{}.png", i));
             }
 
+            cout << "Energy: " << model.energy() << '\n';
             break;
         }
 
