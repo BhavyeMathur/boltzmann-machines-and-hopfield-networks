@@ -7,7 +7,7 @@ A simple C++ implementation of a Hopfield Network with Hebbian learning rules an
 
 ## Hopfield Network
 
-We structure $n$ images with $p$ binary pixels each into an $n\times p$ matrix called $M\in\{-1,1\}^{n\times p}$ (memory). The goal of a Hopfield network with weights $W\inℝ^{p\times p}$ is to sample a vector $ s\in\{-1,1\}^p$ from this data distribution to minimize the total energy $E$,
+We structure $n$ images with $p$ binary pixels each into an $n\times p$ matrix called $M\in\{-1,1\}^{n\times p}$ (memory). The goal of a Hopfield network with weights $W\inℝ^{p\times p}$ is to sample a vector $s\in\{-1,1\}^p$ from this data distribution to minimize the total energy $E$,
 
 $$E=-\frac{1}{2} s^\top W s$$
 
@@ -17,7 +17,7 @@ $$W = \frac{1}{n}M^\top M$$
 
 and setting the weights along the diagonal to 0.
 
-To run inference, we initialize a state vector $ s\inℝ^p$ with random integer entries between -2 and 2 and iteratively update random entries of $ s$ according to the following rule,
+To run inference, we initialize a state vector $s\inℝ^p$ with random integer entries between -2 and 2 and iteratively update random entries of $s$ according to the following rule,
 
 $$s_i= \begin{cases}
 1, &          s^\top W_i \ge0,\\
@@ -28,13 +28,13 @@ where $W_i$ refers to column $i$ of the weight matrix.
 
 ## Boltzmann Machines
 
-Boltzmann machines introduce significantly more stochasticity into the learning and inference processes compared to Hopfield networks and can be used to learn more complex data.
+A Boltzmann Machine (BM) introduces significantly more stochasticity into the learning and inference processes compared to Hopfield networks and can be used to learn more complex data.
 
 | ![](models/food_bm.A.png)  | ![](models/food_hopfield.png) | ![](output/burger_bm.gif) | ![](output/burger.gif) |
 |----------------------------|-------------------------------|---------------------------|------------------------|
 | Boltzmann Machine          | Hopfield Network              | Boltzmann Machine         | Hopfield Network       |
 
-The Boltzmann machine's state is defined by  visible neurons $ v\in \{0,1\}^D$ and hidden neurons $ h\in \{0,1\}^K$. Its parameters are the following weights,
+The Boltzmann machine's state is defined by  visible neurons $v\in \{0,1\}^D$ and hidden neurons $h\in \{0,1\}^K$. Its parameters are the following weights,
 
 1. visible-to-visible neurons $A\inℝ^{D\times D}$
 2. hidden-to-hidden neurons $B\inℝ^{K\times K}$
@@ -42,8 +42,8 @@ The Boltzmann machine's state is defined by  visible neurons $ v\in \{0,1\}^D$ a
 
 and biases,
 
-1. visible neuron biases $ a\inℝ^D$
-2. hidden neurons biases $ b\inℝ^K$
+1. visible neuron biases $a\inℝ^D$
+2. hidden neurons biases $b\inℝ^K$
 
 We wish to minimize the following energy function:
 
@@ -70,3 +70,13 @@ $$h_j= \begin{cases}
 \end{cases}$$
 
 where $\sigma$ is the sigmoid function and $T$ is a temperature parameter which controls the amount of randomness. As $T\rightarrow0$, the model achieves behaviour similar to a Hopfield network and as $T$ grows, it becomes more random.
+
+## Restricted Boltzmann Machines
+
+Boltzmann machines do not perform very well unless constrained. A Restricted Boltzmann Machine (RBM) is created by eliminating connections between the same class (i.e. visible/hidden) neurons. This is equivalent to letting $A=0$ and $B=0$.
+
+The new energy function is,
+
+$$E= - \frac{1}{2} v^\top W h -  a^\top v -  b^\top h$$
+
+By removing inter-class connections, we can also greatly speed-up the training process by updating all the hidden/visible neurons at once.
