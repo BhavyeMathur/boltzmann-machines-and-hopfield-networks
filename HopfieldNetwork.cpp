@@ -22,11 +22,8 @@ HopfieldNetwork::HopfieldNetwork(const std::string &filename) {
 
     int n;
     file >> n;
-    weights = Eigen::MatrixXd(n, n);
 
-    for (int i = 0; i < n; ++i)
-        for (int j = 0; j < n; ++j)
-            file >> weights(i, j);
+    load_matrix_from_file(file, weights, n, n);
 
     file.close();
 }
@@ -79,8 +76,6 @@ void HopfieldNetwork::save_state(const std::string &filename) const {
     int n = static_cast<int>(sqrt(state.rows()));
     assert(n * n == state.rows());
 
-    auto min = state.minCoeff();
-    auto max = state.maxCoeff();
     auto image = state.reshaped(n, n).transpose();
     auto output = ((image.array() + 2) / 2.0);
 

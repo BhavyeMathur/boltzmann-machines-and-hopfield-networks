@@ -16,4 +16,6 @@ add_executable(hopfield main.cpp
                vendor/stb/stb_image_write.h
                vendor/stb/stb_image_write.cpp
                Util.cpp
-               Util.h)
+               Util.h
+               BoltzmannMachine.cpp
+               BoltzmannMachine.h)

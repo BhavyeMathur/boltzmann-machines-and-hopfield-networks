@@ -25,7 +25,7 @@ void write_matrix_to_rgb(const Eigen::MatrixXd &data, const string &path) {
     vector<vector<int>> palette = {
             {240, 20},
             {150, 40},
-            {50, 105}
+            {50,  105}
     };
 
     vector<uint8_t> output(data.size() * 3);
@@ -66,4 +66,19 @@ Eigen::MatrixXd read_npy_file(const string &path) {
 
     std::cerr << "Unknown Error" << std::endl;
     exit(1);
+}
+
+void load_matrix_from_file(ifstream &file, Eigen::MatrixXd &matrix, int rows, int cols) {
+    matrix = Eigen::MatrixXd(rows, cols);
+
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
+            file >> matrix(i, j);
+}
+
+void load_vector_from_file(std::ifstream &file, Eigen::VectorXd &vector, int n) {
+    vector = Eigen::VectorXd(n);
+
+    for (int i = 0; i < n; i++)
+        file >> vector[i];
 }
