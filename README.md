@@ -7,9 +7,9 @@ A simple C++ implementation of a Hopfield Network with Hebbian learning rules an
 
 ## Hopfield Network
 
-We structure $n$ images with $p$ binary pixels each into an $n\times p$ matrix called $M\in\{-1,1\}^{n\times p}$ (memory). The goal of a Hopfield network with weights $W\inℝ^{p\times p}$ is to sample a vector $\vec{s}\in\{-1,1\}^p$ from this data distribution to minimize the total energy $E$,
+We structure $n$ images with $p$ binary pixels each into an $n\times p$ matrix called $M\in\{-1,1\}^{n\times p}$ (memory). The goal of a Hopfield network with weights $W\inℝ^{p\times p}$ is to sample a vector $ s\in\{-1,1\}^p$ from this data distribution to minimize the total energy $E$,
 
-$$E=-\frac{1}{2}\vec{s}^\top W\vec{s}$$
+$$E=-\frac{1}{2} s^\top W s$$
 
 We can do this by initializing the network weights according to the Hebbian learning rule,
 
@@ -17,10 +17,10 @@ $$W = \frac{1}{n}M^\top M$$
 
 and setting the weights along the diagonal to 0.
 
-To run inference, we initialize a state vector $\vec{s}\inℝ^p$ with random integer entries between -2 and 2 and iteratively update random entries of $\vec{s}$ according to the following rule,
+To run inference, we initialize a state vector $ s\inℝ^p$ with random integer entries between -2 and 2 and iteratively update random entries of $ s$ according to the following rule,
 
 $$s_i= \begin{cases}
-1, &         \vec{s}\cdot W_i \ge0,\\
+1, &          s^\top W_i \ge0,\\
 -1, &         \text{otherwise}
 \end{cases}$$
 
@@ -34,7 +34,7 @@ Boltzmann machines introduce significantly more stochasticity into the learning 
 |----------------------------|-------------------------------|---------------------------|------------------------|
 | Boltzmann Machine          | Hopfield Network              | Boltzmann Machine         | Hopfield Network       |
 
-The Boltzmann machine's state is defined by  visible neurons $\vec{v}\in \{0,1\}^D$ and hidden neurons $\vec{h}\in \{0,1\}^K$. Its parameters are the following weights,
+The Boltzmann machine's state is defined by  visible neurons $ v\in \{0,1\}^D$ and hidden neurons $ h\in \{0,1\}^K$. Its parameters are the following weights,
 
 1. visible-to-visible neurons $A\inℝ^{D\times D}$
 2. hidden-to-hidden neurons $B\inℝ^{K\times K}$
@@ -42,30 +42,30 @@ The Boltzmann machine's state is defined by  visible neurons $\vec{v}\in \{0,1\}
 
 and biases,
 
-1. visible neuron biases $\vec{a}\inℝ^D$
-2. hidden neurons biases $\vec{b}\inℝ^K$
+1. visible neuron biases $ a\inℝ^D$
+2. hidden neurons biases $ b\inℝ^K$
 
 We wish to minimize the following energy function:
 
-$$E=-\frac{1}{2}\vec{v}^\top A\vec{v} - \frac{1}{2}\vec{h}^\top B\vec{h} - \frac{1}{2}\vec{v}^\top W\vec{h} - \vec{a}^\top\vec{v} - \vec{b}^\top\vec{h}$$
+$$E=-\frac{1}{2} v^\top A v - \frac{1}{2} h^\top B h - \frac{1}{2} v^\top W h -  a^\top v -  b^\top h$$
 
 The weight matrices are initialized with a Gaussian distribution,
 
 $$A_{ij} \thicksim \mathcal{N}\left(0,\frac{1}{\sqrt{D+K}}\right)$$
 
-and have their diagonals set to zero. Unlike the deterministic training of the Hopfield network, the Boltzmann machine has a gradient-descent-like process.
+and have their diagonals set to zero. Unlike the deterministic training of the Hopfield network, the Boltzmann machine follows a gradient-descent-like process.
 
 #### Inference
 
 Inference is very similar to the Hopfield network, but with a more stochastic update rule,
 
 $$v_i= \begin{cases}
-1, &         \text{with probability } \sigma\left(\frac{1}{T}\left(\vec{h}^\top W_i + \vec{v}^\top A_i + a_i\right)\right)\\
+1, &         \text{with probability } \sigma\left(\frac{1}{T}\left( h^\top W_i +  v^\top A_i + a_i\right)\right)\\
 0 &         
 \end{cases}$$
 
 $$h_j= \begin{cases}
-1, &         \text{with probability } \sigma\left(\frac{1}{T}\left(\vec{v}^\top W_{,j} + \vec{h}^\top B_j + b_j\right)\right)\\
+1, &         \text{with probability } \sigma\left(\frac{1}{T}\left( v^\top W_{,j} +  h^\top B_j + b_j\right)\right)\\
 0 &         
 \end{cases}$$
 
