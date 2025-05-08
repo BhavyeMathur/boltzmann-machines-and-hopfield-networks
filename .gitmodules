@@ -1,0 +1,9 @@
+[submodule "data/mnist"]
+	path = data/mnist
+	url = https://github.com/aiddun/binary-mnist
+[submodule "vendor/eigen"]
+	path = vendor/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "vendor/cnpy"]
+	path = vendor/cnpy
+	url = https://github.com/rogersce/cnpy

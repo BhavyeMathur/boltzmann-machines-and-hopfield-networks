@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+bin/
+*.o
+*.exe
+*.dll
+
+# IDE specific files
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+*.suo
+
+# Dependency directories (if you manage dependencies manually)
+lib/
+include/
+
+# CMake build directory (if you use CMake)
+cmake-build-*/
+
+# System files
+*.swp
+*~
+
+inference/*
