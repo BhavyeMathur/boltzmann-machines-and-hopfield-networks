@@ -26,4 +26,6 @@ private:
     VectorXd state;
 };
 
+void write_matrix_to_png(const Eigen::MatrixXd &data, const string &path);
+
 Eigen::MatrixXd read_npy_file(const string &path);

@@ -34,12 +34,9 @@ void write_matrix_to_rgb(const Eigen::MatrixXd &data, const string &path) {
     vector<uint8_t> output(data.size() * 3);
     for (auto i = 0; i < rows; i++)
         for (auto j = 0; j < cols; j++)
-            for (auto c = 0; c < 3; c++) {
-                cout << data(i, j) << '\n';
+            for (auto c = 0; c < 3; c++)
                 output[3 * (j + cols * i) + c] =
                         palette[c][0] + (palette[c][1] - palette[c][0]) * static_cast<uint8_t>(data(i, j));
-            }
-
 
     stbi_write_png(path.c_str(),
                    static_cast<int>(rows), static_cast<int>(cols), 3, output.data(), 3 * static_cast<int>(cols));
@@ -52,6 +49,8 @@ Eigen::MatrixXd read_npy_file(const string &path) {
 
         if (npy_array.shape.size() != 2)
             throw std::runtime_error("Unsupported dimensions");
+        if (npy_array.word_size != 2)
+            throw std::runtime_error("Unsupported data type");
 
         size_t rows = npy_array.shape[0];
         size_t cols = npy_array.shape[1];
@@ -71,7 +70,6 @@ Eigen::MatrixXd read_npy_file(const string &path) {
     std::cerr << "Unknown Error" << std::endl;
     exit(1);
 }
-
 
 HopfieldNetwork::HopfieldNetwork(const MatrixXd &memory) {
     cout << "Training Hopfield Network with " << memory.rows() << " rows\n";
