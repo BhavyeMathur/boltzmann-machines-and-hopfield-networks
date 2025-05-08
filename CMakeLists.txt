@@ -14,4 +14,6 @@ add_executable(hopfield main.cpp
                HopfieldNetwork.cpp
                HopfieldNetwork.h
                vendor/stb/stb_image_write.h
-               vendor/stb/stb_image_write.cpp)
+               vendor/stb/stb_image_write.cpp
+               Util.cpp
+               Util.h)

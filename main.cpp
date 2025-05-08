@@ -2,6 +2,7 @@
 #include <string>
 
 #include "HopfieldNetwork.h"
+#include "Util.h"
 
 using namespace std;
 
