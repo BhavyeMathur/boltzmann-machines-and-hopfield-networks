@@ -12,6 +12,6 @@ fries = read_image("fries.png")
 popcorn = read_image("popcorn.png")
 sandwich = read_image("sandwich.png")
 
-data = np.stack((fries, popcorn), axis=0)
+data = np.stack((burger, donut), axis=0)
 np.save("food.npy", data)
 print(data.shape)
