@@ -18,3 +18,7 @@ void gaussian_initialize(Eigen::MatrixXd &matrix, double mean, double stddev);
 void gaussian_initialize(Eigen::VectorXd &matrix, double mean, double stddev);
 
 Eigen::MatrixXd normalize(const Eigen::MatrixXd &matrix);
+
+double sigmoid(double x);
+
+Eigen::VectorXd sigmoid(const Eigen::VectorXd &x);

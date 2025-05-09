@@ -19,4 +19,6 @@ add_executable(main main.cpp
                src/Util.cpp
                src/Util.h
                src/BoltzmannMachine.cpp
-               src/BoltzmannMachine.h)
+               src/BoltzmannMachine.h
+               src/RestrictedBoltzmannMachine.cpp
+               src/RestrictedBoltzmannMachine.h)

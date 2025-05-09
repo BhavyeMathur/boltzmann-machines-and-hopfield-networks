@@ -8,16 +8,11 @@
 using namespace Eigen;
 using namespace std;
 
-double sigmoid(double x) {
-    return 1.0 / (1.0 + exp(-x));
-}
-
 BoltzmannMachine::BoltzmannMachine(int visible, int hidden)
         : v(visible), a(visible),
           h(hidden), b(hidden),
           A(visible, visible), B(hidden, hidden), W(visible, hidden) {
     double stddev = 1.0 / sqrt(visible + hidden);
-    cout << stddev << '\n';
     gaussian_initialize(A, 0, stddev);
     gaussian_initialize(B, 0, stddev);
     gaussian_initialize(W, 0, stddev);

@@ -3,6 +3,7 @@
 #include <random>
 #include "stb_image_write.h"
 #include "cnpy.h"
+#include <Eigen/Dense>
 
 using namespace std;
 
@@ -108,4 +109,12 @@ Eigen::MatrixXd normalize(const Eigen::MatrixXd &matrix) {
     auto max = matrix.maxCoeff();
 
     return (matrix.array() - min) / (max - min);
+}
+
+double sigmoid(double x) {
+    return 1.0 / (1.0 + exp(-x));
+}
+
+Eigen::VectorXd sigmoid(const Eigen::VectorXd &x) {
+    return 1 / (x.array().exp() + 1.0);
 }

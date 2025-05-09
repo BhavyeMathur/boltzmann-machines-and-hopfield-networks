@@ -4,3 +4,6 @@
 [submodule "vendor/cnpy"]
 	path = vendor/cnpy
 	url = https://github.com/rogersce/cnpy
+[submodule "data/mnist"]
+	path = data/mnist
+	url = https://github.com/aiddun/binary-mnist
