@@ -17,8 +17,13 @@ void gaussian_initialize(Eigen::MatrixXd &matrix, double mean, double stddev);
 
 void gaussian_initialize(Eigen::VectorXd &matrix, double mean, double stddev);
 
+Eigen::MatrixXd bernoulli_sample(const Eigen::MatrixXd &probabilities);
+
 Eigen::MatrixXd normalize(const Eigen::MatrixXd &matrix);
 
-double sigmoid(double x);
+double sigmoidf(double x);
 
-Eigen::VectorXd sigmoid(const Eigen::VectorXd &x);
+template<typename T>
+    T sigmoid(const T &x) {
+        return 1 / (x.array().exp() + 1.0);
+    }

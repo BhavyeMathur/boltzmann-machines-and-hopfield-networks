@@ -5,9 +5,14 @@
 #include "cnpy.h"
 #include <Eigen/Dense>
 
+using namespace Eigen;
 using namespace std;
 
-void write_matrix_to_png(const Eigen::MatrixXd &data, const string &path) {
+static random_device rd;
+static mt19937 rng(rd());
+static uniform_real_distribution<> uniform(0, 1);
+
+void write_matrix_to_png(const MatrixXd &data, const string &path) {
     auto rows = data.rows();
     auto cols = data.cols();
 
@@ -20,7 +25,7 @@ void write_matrix_to_png(const Eigen::MatrixXd &data, const string &path) {
                    static_cast<int>(rows), static_cast<int>(cols), 1, output.data(), static_cast<int>(cols));
 }
 
-void write_matrix_to_rgb(const Eigen::MatrixXd &data, const string &path) {
+void write_matrix_to_rgb(const MatrixXd &data, const string &path) {
     auto rows = data.rows();
     auto cols = data.cols();
 
@@ -41,7 +46,7 @@ void write_matrix_to_rgb(const Eigen::MatrixXd &data, const string &path) {
                    static_cast<int>(rows), static_cast<int>(cols), 3, output.data(), 3 * static_cast<int>(cols));
 }
 
-Eigen::MatrixXd read_npy_file(const string &path) {
+MatrixXd read_npy_file(const string &path) {
     try {
         cnpy::NpyArray npy_array = cnpy::npy_load(path);
         auto *data_ptr = npy_array.data<int16_t>();
@@ -54,7 +59,7 @@ Eigen::MatrixXd read_npy_file(const string &path) {
         size_t rows = npy_array.shape[0];
         size_t cols = npy_array.shape[1];
 
-        Eigen::MatrixXd data(rows, cols);
+        MatrixXd data(rows, cols);
 
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
@@ -70,51 +75,51 @@ Eigen::MatrixXd read_npy_file(const string &path) {
     exit(1);
 }
 
-void load_from_file(ifstream &file, Eigen::MatrixXd &matrix, int rows, int cols) {
-    matrix = Eigen::MatrixXd(rows, cols);
+void load_from_file(ifstream &file, MatrixXd &matrix, int rows, int cols) {
+    matrix = MatrixXd(rows, cols);
 
     for (int i = 0; i < rows; i++)
         for (int j = 0; j < cols; j++)
             file >> matrix(i, j);
 }
 
-void load_from_file(std::ifstream &file, Eigen::VectorXd &vector, int n) {
-    vector = Eigen::VectorXd(n);
+void load_from_file(std::ifstream &file, VectorXd &vector, int n) {
+    vector = VectorXd(n);
 
     for (auto &i : vector)
         file >> i;
 }
 
-void gaussian_initialize(Eigen::MatrixXd &matrix, double mean, double stddev) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::normal_distribution<> dist(mean, stddev);
+void gaussian_initialize(MatrixXd &matrix, double mean, double stddev) {
+    normal_distribution<> dist(mean, stddev);
 
     for (int i = 0; i < matrix.rows(); i++)
         for (int j = 0; j < matrix.cols(); j++)
-            matrix(i, j) = dist(gen);
+            matrix(i, j) = dist(rng);
 }
 
-void gaussian_initialize(Eigen::VectorXd &vector, double mean, double stddev) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::normal_distribution<> dist(mean, stddev);
+void gaussian_initialize(VectorXd &vector, double mean, double stddev) {
+    normal_distribution<> dist(mean, stddev);
 
     for (auto &i : vector)
-        i = dist(gen);
+        i = dist(rng);
 }
 
-Eigen::MatrixXd normalize(const Eigen::MatrixXd &matrix) {
+MatrixXd bernoulli_sample(const MatrixXd &probabilities) {
+    MatrixXd random_matrix = MatrixXd::NullaryExpr(probabilities.rows(), probabilities.cols(),
+                                                   [&uniform = uniform, &rng = rng]() {
+                                                       return uniform(rng);
+                                                   });
+    return (random_matrix.array() < probabilities.array()).cast<double>();
+}
+
+MatrixXd normalize(const MatrixXd &matrix) {
     auto min = matrix.minCoeff();
     auto max = matrix.maxCoeff();
 
     return (matrix.array() - min) / (max - min);
 }
 
-double sigmoid(double x) {
-    return 1.0 / (1.0 + exp(-x));
-}
-
-Eigen::VectorXd sigmoid(const Eigen::VectorXd &x) {
-    return 1 / (x.array().exp() + 1.0);
+double sigmoidf(double x) {
+    return 1 / (exp(x) + 1.0);
 }

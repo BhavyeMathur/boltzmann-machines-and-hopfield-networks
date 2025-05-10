@@ -1,157 +1,149 @@
 #include "RestrictedBoltzmannMachine.h"
-#include "Util.h"
 
-#include <random>
 #include <iostream>
 #include <fstream>
 
 using namespace Eigen;
 using namespace std;
 
-RestrictedBoltzmannMachine::RestrictedBoltzmannMachine(int visible, int hidden)
-        : V(visible), H(hidden),
-          x(visible), c(visible),
-          h(hidden), b(hidden),
-          W(hidden, visible) {
-    double stddev = 1.0 / sqrt(visible + hidden);
-    gaussian_initialize(W, 0, stddev);
+RestrictedBoltzmannMachine::RestrictedBoltzmannMachine(int visible, int hidden, RBMTrainParameters params)
+        : n_visible(visible), n_hidden(hidden),
+          x(n_visible), c(n_visible), h(n_hidden), b(n_hidden), W(n_visible, n_hidden),
+          params(params) {
 }
 
-RestrictedBoltzmannMachine::RestrictedBoltzmannMachine(const std::string &filename) {
+RestrictedBoltzmannMachine::RestrictedBoltzmannMachine(const std::string &filename)
+        : n_hidden(0), n_visible(0) {
     ifstream file(filename);
     if (!file.is_open()) {
         cerr << "Unable to open file: " << filename << endl;
         exit(1);
     }
 
-    int visible, hidden;
-    file >> visible >> hidden;
+    file >> n_hidden >> n_visible;
 
-    load_from_file(file, W, visible, hidden);
-    load_from_file(file, c, visible);
-    load_from_file(file, b, hidden);
+    load_from_file(file, W, n_visible, n_hidden);
+    load_from_file(file, c, n_visible);
+    load_from_file(file, b, n_hidden);
 
     file.close();
 
-    x = VectorXd(visible);
-    h = VectorXd(hidden);
+    x = VectorXd(n_visible);
+    h = VectorXd(n_hidden);
+    randomize_state();
 }
 
-void RestrictedBoltzmannMachine::train(const MatrixXd &data, int epochs, int batch_size, double learning_rate) {
-    random_device rd;
-    mt19937 rng(rd());
+void RestrictedBoltzmannMachine::train(const MatrixXd &data) {
     uniform_int_distribution<> index(0, data.rows() - 1);
 
-    for (int epoch = 0; epoch < epochs; epoch++) {
-        // positive phase
-        MatrixXd pos_W = MatrixXd::Zero(W.rows(), W.cols());
-        VectorXd pos_c = VectorXd::Zero(c.size());
-        VectorXd pos_b = VectorXd::Zero(b.size());
+    W_grad = MatrixXd(n_hidden, n_visible);
+    b_grad = VectorXd(n_hidden);
+    c_grad = VectorXd(n_visible);
 
-        for (int i = 0; i < batch_size; i++) {
-            int row = index(rng);
+    gaussian_initialize(W, 0, params.w_stddev);
+    gaussian_initialize(c, params.xb_mean, params.xb_stddev);
+    gaussian_initialize(b, params.hb_mean, params.hb_stddev);
 
-            x = data.row(row);
-            gibbs_sample_hidden();
+    int batches = data.rows() / params.batch_size;
+    double loss = 0;
 
-            pos_W += h * x.transpose();
-            pos_b += h;
-            pos_c += x;
+    for (int epoch = 0; epoch < params.epochs; epoch++) {
+        for (int i = 0; i < batches; i++) {
+            auto &batch = data.block(i * params.batch_size, 0, params.batch_size, data.cols());
+            loss = train_batch(batch);
+            optimizer_step();
+            cout << "\tBatch" << i + 1 << " / " << batches << " | Loss: " << loss << "\n";
+
         }
 
-        pos_W /= data.rows();
-        pos_b /= data.rows();
-        pos_c /= data.rows();
-
-        // negative phase
-        MatrixXd neg_W = MatrixXd::Zero(W.rows(), W.cols());
-        VectorXd neg_c = VectorXd::Zero(c.size());
-        VectorXd neg_b = VectorXd::Zero(b.size());
-
-        for (int i = 0; i < batch_size; i++) {
-            int row = index(rng);
-
-            x = data.row(row);
-            gibbs_sample(x, 10);
-            auto hidden_probabilities = sigmoid(b + W * x);
-
-            neg_W += hidden_probabilities * x.transpose();
-            neg_b += hidden_probabilities;
-            neg_c += x;
-        }
-
-        neg_W /= data.rows();
-        neg_b /= data.rows();
-        neg_c /= data.rows();
-
-        // parameter updating
-
-        W += learning_rate * (pos_W - neg_W);
-        b += learning_rate * (pos_b - neg_b);
-        c += learning_rate * (pos_c - neg_c);
-
-        cout << "Epoch " << epoch + 1 << " / " << epochs << " | Energy: " << energy() << "\n";
+        cout << "Epoch " << epoch + 1 << " / " << params.epochs << " | Loss: " << loss << "\n";
     }
+}
+
+/**
+ *
+ * @param batch (batch_size, n_visible)
+ */
+double RestrictedBoltzmannMachine::train_batch(const Eigen::MatrixXd &batch) {
+    // positive phase
+    MatrixXd prob_of_h = probability_h_given_x(batch);  // (batch_size, n_hidden)
+    MatrixXd h_hat = bernoulli_sample(prob_of_h);  // (batch_size, n_hidden)
+
+    W_grad = batch.transpose() * prob_of_h;
+    b_grad = prob_of_h.colwise().sum();  // (1, n_hidden)
+    c_grad = batch.colwise().sum();  // (1, n_visible)
+
+    // negative phase
+    MatrixXd prob_of_x = probability_x_given_h(h_hat);  // (batch_size, n_visible)
+    MatrixXd x_hat = bernoulli_sample(prob_of_x);  // (batch_size, n_visible)
+
+    prob_of_h = probability_h_given_x(x_hat);  // (batch_size, n_hidden)
+
+    W_grad -= x_hat.transpose() * prob_of_h;
+    b_grad -= prob_of_h.colwise().sum();
+    c_grad -= x_hat.colwise().sum();
+
+    // normalizing
+    int n = batch.rows();
+    W_grad /= n;
+    b_grad /= n;
+    c_grad /= n;
+
+    auto loss = (batch - prob_of_x).array().square().mean();
+    return loss;
+}
+
+void RestrictedBoltzmannMachine::optimizer_step() {
+    W += params.learning_rate * W_grad;
+    b += params.learning_rate * b_grad;
+    c += params.learning_rate * c_grad;
 }
 
 void RestrictedBoltzmannMachine::randomize_state() {
-    random_device rd;
-    mt19937 gen(rd());
-    bernoulli_distribution random(0.5);
-
     for (double &i: x)
-        i = random(gen) ? 1 : 0;
+        i = uniform(rng) < 0.5 ? 1 : 0;
     for (double &i: h)
-        i = random(gen) ? 1 : 0;
+        i = uniform(rng) < 0.5 ? 1 : 0;
 }
 
 void RestrictedBoltzmannMachine::update_state(int steps) {
-    gibbs_sample(x, steps);
-}
-
-void RestrictedBoltzmannMachine::gibbs_sample(const VectorXd &x0, int steps) {
-    x = x0;
-
     for (int i = 0; i < steps; i++) {
-        gibbs_sample_hidden();
-        gibbs_sample_visible();
+        VectorXd probability_of_h = probability_h_given_x(x);
+        h = bernoulli_sample(probability_of_h);
+
+        VectorXd probability_of_x = probability_x_given_h(h);
+        x = bernoulli_sample(probability_of_x);
     }
 }
 
-void RestrictedBoltzmannMachine::gibbs_sample_hidden() {
-    random_device rd;
-    mt19937 rng(rd());
-
-    for (int j = 0; j < h.size(); j++) {
-        double p = probability_of_hidden_on(j);
-        h[j] = bernoulli_distribution(p)(rng) ? 1 : 0;
-    }
+MatrixXd RestrictedBoltzmannMachine::probability_x_given_h(const MatrixXd &val) const {
+    MatrixXd input = val * W.transpose();  // (batch_size, n_visible)
+    input.rowwise() += c.transpose();
+    return sigmoid(input);  // (batch_size, n_visible)
 }
 
-void RestrictedBoltzmannMachine::gibbs_sample_visible() {
-    random_device rd;
-    mt19937 rng(rd());
+VectorXd RestrictedBoltzmannMachine::probability_x_given_h(const VectorXd &val) const {
+    VectorXd input = W * val + c;  // (n_visible, )
+    return sigmoid(input);
+}
 
-    for (int k = 0; k < x.size(); k++) {
-        double p = probability_of_visible_on(k);
-        x[k] = bernoulli_distribution(p)(rng) ? 1 : 0;
-    }
+MatrixXd RestrictedBoltzmannMachine::probability_h_given_x(const MatrixXd &val) const {
+    MatrixXd input = val * W;  // (batch_size, n_hidden)
+    input.rowwise() += b.transpose();
+    return sigmoid(input);   // (batch_size, n_hidden)
+}
+
+VectorXd RestrictedBoltzmannMachine::probability_h_given_x(const VectorXd &val) const {
+    VectorXd input = W.transpose() * val + b;  // (n_hidden, )
+    return sigmoid(input);
 }
 
 double RestrictedBoltzmannMachine::energy() const {
-    double e1 = h.dot(W * x);
-    double e2 = c.dot(x) + b.dot(h);
-    return -(e1 + e2);
+    return -h.dot(W * x) - c.dot(x) - b.dot(h);
 }
 
-double RestrictedBoltzmannMachine::probability_of_visible_on(int k) const {
-    double input = W.col(k).dot(h) + c[k];
-    return sigmoid(input);
-}
-
-double RestrictedBoltzmannMachine::probability_of_hidden_on(int j) const {
-    double input = W.row(j).dot(x) + b[j];
-    return sigmoid(input);
+double RestrictedBoltzmannMachine::free_energy() const {
+    return -c.dot(x) - (W * x + b).array().exp().log1p().sum();
 }
 
 void RestrictedBoltzmannMachine::save(const string &filename) const {
@@ -161,17 +153,36 @@ void RestrictedBoltzmannMachine::save(const string &filename) const {
         exit(1);
     }
 
-    file << W.rows() << ' ' << W.cols() << endl;
-    file << W << c << b << endl;
+    file << n_hidden << ' ' << n_visible << endl;
+    file << W << endl;
+    file << c << endl;
+    file << b << endl;
     file.close();
 }
 
 void RestrictedBoltzmannMachine::save_weights_to_png(const string &filename) const {
-    write_matrix_to_png(255 * normalize(W), filename);
+    int n = static_cast<int>(sqrt(n_visible));
+    int m = static_cast<int>(sqrt(n_hidden));
+
+    MatrixXd weights = 255 * normalize(W);
+    MatrixXd output(m * n, m * n);
+    output.setZero();
+
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < m; j++) {
+            if (j + i * m == n_hidden)
+                goto end;
+            MatrixXd block = weights.col(i * m + j).reshaped(n, n);
+            output.block(i * n, j * n, n, n) = block.array();
+        }
+
+    end:
+    write_matrix_to_png(output, filename);
+    write_matrix_to_png(weights, filename + ".png");
 }
 
 void RestrictedBoltzmannMachine::save_state(const string &filename) const {
-    int n = static_cast<int>(sqrt(x.rows()));
+    int n = static_cast<int>(sqrt(n_visible));
 
     auto image = x.reshaped(n, n).transpose();
     write_matrix_to_rgb(image, filename);

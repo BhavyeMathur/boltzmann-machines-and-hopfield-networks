@@ -14,7 +14,8 @@ int main() {
             "2. Load & Run Hopfield Network\n"
             "3. Train new Boltzmann Machine\n"
             "4. Load & Run Boltzmann Machine\n"
-            "5. Train Restricted Boltzmann Machine\n";
+            "5. Train Restricted Boltzmann Machine\n"
+            "6. Load & Run Restricted Boltzmann Machine\n";
     cin >> option;
 
     switch (option) {
@@ -66,12 +67,23 @@ int main() {
         }
 
         case 5: {
-            RestrictedBoltzmannMachine model(28 * 28, 1000);
+            string path = "data/mnist/mnist.npy";
+            auto data = read_npy_file(path);
 
-            string path = "data/mnist/original_28x28/all_digits_binary_pixels/x_train.npy";
-            auto data = (read_npy_file(path) * 2).array() - 1;
+//            auto sample = data.row(10).reshaped(28, 28);
+//            write_matrix_to_png(255 * sample, "sample.png");
+//            exit(0);
 
-            model.train(data, 100, 128, 0.001);
+            RBMTrainParameters params;
+            params.learning_rate = 0.01;
+            params.xb_mean = -0.2;
+            params.hb_mean = -0.5;
+            params.contrastive_divergence_steps = 1;
+            params.epochs = 20;
+
+            RestrictedBoltzmannMachine model(28 * 28, 100, params);
+
+            model.train(data);
             model.save("models/mnist_rbm.txt");
             model.save_weights_to_png("models/mnist_rbm.png");
             break;
@@ -80,11 +92,12 @@ int main() {
         case 6: {
             RestrictedBoltzmannMachine model("models/mnist_rbm.txt");
 
-            model.randomize_state();
-            for (int i = 0; i < 150; i++) {
+            for (int i = 0; i < 1000; i++) {
                 model.update_state(20);
-                model.save_state(format("inference/output{}.png", i));
+                if (i % 100 == 0)
+                    cout << i << " / 1000\n";
             }
+            model.save_state("output.png");
             break;
         }
 

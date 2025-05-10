@@ -1,9 +1,9 @@
-# Boltzmann Machine & Hopfield Network in C++
+# Boltzmann Machines & Hopfield Network in C++
 
 | ![](models/food.png) | ![](output/donut.gif)  | ![](output/burger.gif) |
 |----------------------|------------------------|------------------------|
 
-A simple C++ implementation of a Hopfield Network with Hebbian learning rules and Generalised Boltzmann Machine with Contrastive Learning.
+Simple C++ implementations of a Hopfield Network with Hebbian learning rules and Generalized Boltzmann Machine, and Restricted Boltzmann Machine with Contrastive Divergence.
 
 ## Hopfield Network
 

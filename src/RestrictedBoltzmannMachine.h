@@ -2,20 +2,38 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Core>
+#include <random>
+#include "Util.h"
+
+struct RBMTrainParameters {
+    int epochs = 10;
+    int batch_size = 256;
+    int contrastive_divergence_steps = 10;
+
+    double learning_rate = 0.001;
+
+    double w_stddev = 0.05;
+    double xb_mean = 0;
+    double xb_stddev = 0.02;
+    double hb_mean = 0;
+    double hb_stddev = 0.02;
+};
 
 class RestrictedBoltzmannMachine {
 public:
-    RestrictedBoltzmannMachine(int visible, int hidden);
+    RestrictedBoltzmannMachine(int visible, int hidden, RBMTrainParameters params);
 
     explicit RestrictedBoltzmannMachine(const std::string &filename);
 
-    void train(const Eigen::MatrixXd &data, int epochs, int batch_size = 64, double learning_rate = 0.005);
+    void train(const Eigen::MatrixXd &data);
 
     void randomize_state();
 
     void update_state(int steps);
 
     [[nodiscard]] double energy() const;
+
+    [[nodiscard]] double free_energy() const;
 
     void save(const std::string &filename) const;
 
@@ -24,8 +42,8 @@ public:
     void save_state(const std::string &filename) const;
 
 private:
-    int V;  // number of visible units
-    int H;  // number of hidden units
+    int n_visible;  // number of visible units
+    int n_hidden;  // number of hidden units
 
     Eigen::MatrixXd W;  // visible-to-hidden weights
 
@@ -35,13 +53,30 @@ private:
     Eigen::VectorXd x;  // visible state
     Eigen::VectorXd h;  // hidden state
 
-    [[nodiscard]] double probability_of_visible_on(int i) const;
+    std::random_device rd;
+    std::mt19937 rng{rd()};
+    std::uniform_real_distribution<double> uniform{0, 1};
 
-    [[nodiscard]] double probability_of_hidden_on(int j) const;
+    // training variables
+    Eigen::MatrixXd W_vel;
+    Eigen::VectorXd c_vel;
+    Eigen::VectorXd b_vel;
 
-    void gibbs_sample(const Eigen::VectorXd &x0, int steps);
+    Eigen::MatrixXd W_grad;
+    Eigen::VectorXd c_grad;
+    Eigen::VectorXd b_grad;
 
-    void gibbs_sample_hidden();
+    RBMTrainParameters params;
 
-    void gibbs_sample_visible();
+    double train_batch(const Eigen::MatrixXd &batch);
+
+    void optimizer_step();
+
+    [[nodiscard]] Eigen::MatrixXd probability_x_given_h(const Eigen::MatrixXd &val) const;
+
+    [[nodiscard]] Eigen::VectorXd probability_x_given_h(const Eigen::VectorXd &val) const;
+
+    [[nodiscard]] Eigen::MatrixXd probability_h_given_x(const Eigen::MatrixXd &val) const;
+
+    [[nodiscard]] Eigen::VectorXd probability_h_given_x(const Eigen::VectorXd &val) const;
 };

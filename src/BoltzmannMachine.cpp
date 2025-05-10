@@ -188,12 +188,12 @@ double BoltzmannMachine::probability_of_visible_on(int i) const {
     double input = A.row(i).dot(v) + a[i];
     if (h.size() != 0)
         input += W.row(i).dot(h);
-    return sigmoid(input / temperature);
+    return sigmoidf(input / temperature);
 }
 
 double BoltzmannMachine::probability_of_hidden_on(int j) const {
     double input = W.col(j).dot(v) + B.row(j).dot(h) + b[j];
-    return sigmoid(input / temperature);
+    return sigmoidf(input / temperature);
 }
 
 void BoltzmannMachine::save(const std::string &filename) const {
@@ -216,7 +216,6 @@ void BoltzmannMachine::save_png(const std::string &filename) const {
 
 void BoltzmannMachine::save_state(const std::string &filename) const {
     int n = static_cast<int>(sqrt(v.rows()));
-    assert(n * n == v.rows());
 
     auto image = v.reshaped(n, n).transpose();
     write_matrix_to_rgb(image, filename);

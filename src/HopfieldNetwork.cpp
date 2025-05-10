@@ -70,7 +70,6 @@ void HopfieldNetwork::save_png(const std::string &filename) const {
 
 void HopfieldNetwork::save_state(const std::string &filename) const {
     int n = static_cast<int>(sqrt(state.rows()));
-    assert(n * n == state.rows());
 
     auto image = state.reshaped(n, n).transpose();
     auto output = ((image.array() + 2) / 2.0);
