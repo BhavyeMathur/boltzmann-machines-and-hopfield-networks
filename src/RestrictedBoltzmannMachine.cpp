@@ -36,27 +36,34 @@ RestrictedBoltzmannMachine::RestrictedBoltzmannMachine(const std::string &filena
 void RestrictedBoltzmannMachine::train(const MatrixXd &data) {
     uniform_int_distribution<> index(0, data.rows() - 1);
 
-    W_grad = MatrixXd(n_hidden, n_visible);
-    b_grad = VectorXd(n_hidden);
-    c_grad = VectorXd(n_visible);
+    W_vel = MatrixXd::Zero(n_visible, n_hidden);
+    b_vel = VectorXd::Zero(n_hidden);
+    c_vel = VectorXd::Zero(n_visible);
 
     gaussian_initialize(W, 0, params.w_stddev);
     gaussian_initialize(c, params.xb_mean, params.xb_stddev);
     gaussian_initialize(b, params.hb_mean, params.hb_stddev);
 
     int batches = data.rows() / params.batch_size;
-    double loss = 0;
-
     for (int epoch = 0; epoch < params.epochs; epoch++) {
-        for (int i = 0; i < batches; i++) {
-            auto &batch = data.block(i * params.batch_size, 0, params.batch_size, data.cols());
-            loss = train_batch(batch);
-            optimizer_step();
-            cout << "\tBatch" << i + 1 << " / " << batches << " | Loss: " << loss << "\n";
+        double loss = 0;
 
+        vector<int> indices(data.rows());
+        iota(indices.begin(), indices.end(), 0);
+        shuffle(indices.begin(), indices.end(), rng);
+
+        MatrixXd shuffled_data(data.rows(), data.cols());
+        for (int i = 0; i < data.rows(); ++i)
+            shuffled_data.row(i) = data.row(indices[i]);
+
+        for (int i = 0; i < batches; i++) {
+            auto batch = shuffled_data.block(i * params.batch_size, 0, params.batch_size, data.cols());
+
+            loss += train_batch(batch);
+            optimizer_step();
         }
 
-        cout << "Epoch " << epoch + 1 << " / " << params.epochs << " | Loss: " << loss << "\n";
+        cout << "Epoch " << epoch + 1 << " / " << params.epochs << " | Loss: " << loss << endl;
     }
 }
 
@@ -89,14 +96,22 @@ double RestrictedBoltzmannMachine::train_batch(const Eigen::MatrixXd &batch) {
     b_grad /= n;
     c_grad /= n;
 
-    auto loss = (batch - prob_of_x).array().square().mean();
+    auto loss = (batch - x_hat).array().square().colwise().sum().mean();
     return loss;
 }
 
 void RestrictedBoltzmannMachine::optimizer_step() {
-    W += params.learning_rate * W_grad;
-    b += params.learning_rate * b_grad;
-    c += params.learning_rate * c_grad;
+    W_vel *= params.momentum;
+    b_vel *= params.momentum;
+    c_vel *= params.momentum;
+
+    W_vel += (1 - params.momentum) * params.learning_rate * W_grad;
+    b_vel += (1 - params.momentum) * params.learning_rate * b_grad;
+    c_vel += (1 - params.momentum) * params.learning_rate * c_grad;
+
+    W += W_vel;
+    b += b_vel;
+    c += c_vel;
 }
 
 void RestrictedBoltzmannMachine::randomize_state() {
@@ -178,7 +193,6 @@ void RestrictedBoltzmannMachine::save_weights_to_png(const string &filename) con
 
     end:
     write_matrix_to_png(output, filename);
-    write_matrix_to_png(weights, filename + ".png");
 }
 
 void RestrictedBoltzmannMachine::save_state(const string &filename) const {

@@ -25,5 +25,5 @@ double sigmoidf(double x);
 
 template<typename T>
     T sigmoid(const T &x) {
-        return 1 / (x.array().exp() + 1.0);
+        return 1 / ((-x).array().exp() + 1.0);
     }

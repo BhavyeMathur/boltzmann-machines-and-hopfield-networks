@@ -11,12 +11,13 @@ struct RBMTrainParameters {
     int contrastive_divergence_steps = 10;
 
     double learning_rate = 0.001;
+    double momentum = 0.01;
 
-    double w_stddev = 0.05;
+    double w_stddev = 0.1;
     double xb_mean = 0;
-    double xb_stddev = 0.02;
+    double xb_stddev = 0.0;
     double hb_mean = 0;
-    double hb_stddev = 0.02;
+    double hb_stddev = 0.0;
 };
 
 class RestrictedBoltzmannMachine {

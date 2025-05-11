@@ -9,6 +9,8 @@
 using namespace std;
 
 int main() {
+    cout << fixed << setprecision(4);
+
     int option;
     cout << "1. Train new Hopfield Network\n"
             "2. Load & Run Hopfield Network\n"
@@ -68,18 +70,17 @@ int main() {
 
         case 5: {
             string path = "data/mnist/mnist.npy";
-            auto data = read_npy_file(path);
-
-//            auto sample = data.row(10).reshaped(28, 28);
-//            write_matrix_to_png(255 * sample, "sample.png");
-//            exit(0);
+            Eigen::MatrixXd data = read_npy_file(path) / 255;
 
             RBMTrainParameters params;
-            params.learning_rate = 0.01;
-            params.xb_mean = -0.2;
-            params.hb_mean = -0.5;
-            params.contrastive_divergence_steps = 1;
-            params.epochs = 20;
+            params.xb_mean = 0.0;
+            params.hb_mean = -4.0;
+
+            params.learning_rate = 0.1;
+            params.momentum = 0.5;
+
+            params.batch_size = 50;
+            params.epochs = 50;
 
             RestrictedBoltzmannMachine model(28 * 28, 100, params);
 
@@ -92,7 +93,7 @@ int main() {
         case 6: {
             RestrictedBoltzmannMachine model("models/mnist_rbm.txt");
 
-            for (int i = 0; i < 1000; i++) {
+            for (int i = 0; i < 150; i++) {
                 model.update_state(20);
                 if (i % 100 == 0)
                     cout << i << " / 1000\n";

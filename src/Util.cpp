@@ -8,10 +8,6 @@
 using namespace Eigen;
 using namespace std;
 
-static random_device rd;
-static mt19937 rng(rd());
-static uniform_real_distribution<> uniform(0, 1);
-
 void write_matrix_to_png(const MatrixXd &data, const string &path) {
     auto rows = data.rows();
     auto cols = data.cols();
@@ -91,6 +87,8 @@ void load_from_file(std::ifstream &file, VectorXd &vector, int n) {
 }
 
 void gaussian_initialize(MatrixXd &matrix, double mean, double stddev) {
+    random_device rd;
+    mt19937 rng(rd());
     normal_distribution<> dist(mean, stddev);
 
     for (int i = 0; i < matrix.rows(); i++)
@@ -99,6 +97,8 @@ void gaussian_initialize(MatrixXd &matrix, double mean, double stddev) {
 }
 
 void gaussian_initialize(VectorXd &vector, double mean, double stddev) {
+    random_device rd;
+    mt19937 rng(rd());
     normal_distribution<> dist(mean, stddev);
 
     for (auto &i : vector)
@@ -106,9 +106,13 @@ void gaussian_initialize(VectorXd &vector, double mean, double stddev) {
 }
 
 MatrixXd bernoulli_sample(const MatrixXd &probabilities) {
+    random_device rd;
+    mt19937 rng(rd());
+    std::uniform_real_distribution<> unif(0.0, 1.0);
+
     MatrixXd random_matrix = MatrixXd::NullaryExpr(probabilities.rows(), probabilities.cols(),
-                                                   [&uniform = uniform, &rng = rng]() {
-                                                       return uniform(rng);
+                                                   [&]() {
+                                                       return unif(rng);
                                                    });
     return (random_matrix.array() < probabilities.array()).cast<double>();
 }
@@ -121,5 +125,5 @@ MatrixXd normalize(const MatrixXd &matrix) {
 }
 
 double sigmoidf(double x) {
-    return 1 / (exp(x) + 1.0);
+    return 1 / (exp(-x) + 1.0);
 }
