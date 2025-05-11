@@ -24,8 +24,9 @@ HopfieldNetwork::HopfieldNetwork(const std::string &filename) {
     file >> n;
 
     load_from_file(file, weights, n, n);
-
     file.close();
+
+    randomize_state();
 }
 
 void HopfieldNetwork::randomize_state() {

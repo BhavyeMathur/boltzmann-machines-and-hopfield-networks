@@ -5,6 +5,36 @@
 
 Simple C++ implementations of a Hopfield Network with Hebbian learning rules and Generalized Boltzmann Machine, and Restricted Boltzmann Machine with Contrastive Divergence trained on the MNIST dataset.
 
+```[commandline]
+Usage: ./main [OPTIONS]
+
+Options:
+  --help                  Show this help message and exit
+  --model, -m <type>      Choose model type: 'hopfield', 'boltzmann', or 'rbm' (default: rbm)
+  --train, -t <type>      'true' for training, 'false' for inference (default: true)
+  --data, -d  <string>    Path to .npy file containing training data
+  --name <string>         Output/input filename without extension (e.g. 'mnist_rbm')
+  --epochs, -e <int>      Number of training epochs (e.g., 20)
+  --batch_size, -b <int>  Batch size for training (e.g., 256)
+  --hidden, -n <int>      Number of hidden neurons (e.g., 100)
+  --cd_k, -k <int>        Number of Contrastive Divergence steps (e.g., 10)
+  --lr, -l <float>        Learning rate (e.g., 0.05)
+  --momentum, -p <float>  Momentum for gradient update (e.g., 0.5)
+  --w_std, -w <float>     Standard deviation for initializing weights (e.g., 0.1)
+  --x_mean, -x <float>    Mean for initializing visible bias (e.g., -0.2)
+  --h_mean, -h <float>    Mean for initializing hidden bias (e.g., -0.5)
+```
+
+For example, to train a Restricted Boltzmann Machine on the default dataset:
+```
+./main --model rbm --epochs 20 --batch_size 64 --cd_k 2 --lr 0.05
+```
+
+And then to run inference on the trained model:
+```
+./main --model rbm --train false
+```
+
 ## Hopfield Network
 
 We structure $n$ images with $p$ binary pixels each into an $n\times p$ matrix called $M\in\{-1,1\}^{n\times p}$ (memory). The goal of a Hopfield network with weights $W\inℝ^{p\times p}$ is to sample a vector $s\in\{-1,1\}^p$ from this data distribution to minimize the total energy $E$,

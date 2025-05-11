@@ -37,10 +37,11 @@ BoltzmannMachine::BoltzmannMachine(const std::string &filename) {
     load_from_file(file, a, visible);
     load_from_file(file, b, hidden);
 
+    file.close();
+
     v = VectorXd(visible);
     h = VectorXd(hidden);
-
-    file.close();
+    randomize_state();
 }
 
 void BoltzmannMachine::train(const MatrixXd &data, int epochs, int steps, double learning_rate) {
