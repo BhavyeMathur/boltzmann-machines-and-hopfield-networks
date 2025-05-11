@@ -73,14 +73,28 @@ where $\sigma$ is the sigmoid function and $T$ is a temperature parameter which 
 
 ## Restricted Boltzmann Machines
 
-| ![](output/0.png) | ![](output/1.png) | ![](output/2.png) | ![](output/3.png) | ![](output/4.png) |
-|-------------------|-------------------|-------------------|-------------------|-------------------|
-| ![](output/5.png) | ![](output/6.png) | ![](output/7.png) | ![](output/8.png) | ![](output/9.png) |
+![](output/01234.png)
+![](output/56789.png)
 
 Boltzmann machines do not perform very well unless constrained. A Restricted Boltzmann Machine (RBM) is created by eliminating connections between the same class (i.e. visible/hidden) neurons. This is equivalent to letting $A=0$ and $B=0$.
 
-The new energy function is,
+The new energy function is to minimize is
 
 $$E= - \frac{1}{2} v^\top W h -  a^\top v -  b^\top h$$
 
-By removing inter-class connections, we can also greatly speed-up the training process by updating all the hidden/visible neurons at once.
+By removing inter-class connections, we can also greatly speed up the training process by updating all the hidden/visible neurons at once.
+
+
+Inference is almost identical to the Boltzmann Network with the new update rules
+
+$$v_i= \begin{cases}
+1, &         \text{with probability } \sigma\left(\frac{1}{T}\left( h^\top W_i + a_i\right)\right)\\
+0 &         
+\end{cases}$$
+
+$$h_j= \begin{cases}
+1, &         \text{with probability } \sigma\left(\frac{1}{T}\left( v^\top W_{,j} + b_j\right)\right)\\
+0 &         
+\end{cases}$$
+
+Note that since the probabilities of updating the visible/hidden neurons only depend on the hidden/visible neurons, we can parallize the updates and make the learning process faster.
