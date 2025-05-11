@@ -81,14 +81,21 @@ double RestrictedBoltzmannMachine::train_batch(const Eigen::MatrixXd &batch) {
     c_grad = batch.colwise().sum();  // (1, n_visible)
 
     // negative phase
-    MatrixXd prob_of_x = probability_x_given_h(h_hat);  // (batch_size, n_visible)
-    MatrixXd x_hat = bernoulli_sample(prob_of_x);  // (batch_size, n_visible)
+    MatrixXd x_neg = batch;
+    MatrixXd h_neg;
+    MatrixXd prob_of_x;
 
-    prob_of_h = probability_h_given_x(x_hat);  // (batch_size, n_hidden)
+    for (int step = 0; step < params.contrastive_divergence_steps; ++step) {
+        prob_of_x = probability_x_given_h(h_hat);
+        x_neg = bernoulli_sample(prob_of_x);
 
-    W_grad -= x_hat.transpose() * prob_of_h;
+        prob_of_h = probability_h_given_x(x_neg);
+        h_hat = bernoulli_sample(prob_of_h);
+    }
+
+    W_grad -= x_neg.transpose() * prob_of_h;
     b_grad -= prob_of_h.colwise().sum();
-    c_grad -= x_hat.colwise().sum();
+    c_grad -= x_neg.colwise().sum();
 
     // normalizing
     int n = batch.rows();
@@ -96,7 +103,7 @@ double RestrictedBoltzmannMachine::train_batch(const Eigen::MatrixXd &batch) {
     b_grad /= n;
     c_grad /= n;
 
-    auto loss = (batch - x_hat).array().square().colwise().sum().mean();
+    auto loss = (batch - x_neg).array().square().colwise().sum().mean();
     return loss;
 }
 

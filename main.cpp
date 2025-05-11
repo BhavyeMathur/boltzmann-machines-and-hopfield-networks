@@ -60,7 +60,7 @@ int main() {
 
             model.randomize_state();
             for (int i = 0; i < 150; i++) {
-                model.update_state(20);
+                model.update_state(1);
                 model.save_state(format("inference/output{}.png", i));
             }
 
@@ -74,13 +74,14 @@ int main() {
 
             RBMTrainParameters params;
             params.xb_mean = 0.0;
-            params.hb_mean = -4.0;
+            params.hb_mean = -2.0;
 
-            params.learning_rate = 0.1;
+            params.learning_rate = 0.05;
             params.momentum = 0.5;
 
-            params.batch_size = 50;
+            params.batch_size = 256;
             params.epochs = 50;
+            params.contrastive_divergence_steps = 20;
 
             RestrictedBoltzmannMachine model(28 * 28, 100, params);
 
@@ -94,9 +95,8 @@ int main() {
             RestrictedBoltzmannMachine model("models/mnist_rbm.txt");
 
             for (int i = 0; i < 150; i++) {
-                model.update_state(20);
-                if (i % 100 == 0)
-                    cout << i << " / 1000\n";
+                model.save_state(format("inference/{}.png", i));
+                model.update_state(35);
             }
             model.save_state("output.png");
             break;
