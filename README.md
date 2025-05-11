@@ -74,6 +74,7 @@ where $\sigma$ is the sigmoid function and $T$ is a temperature parameter which 
 ## Restricted Boltzmann Machines
 
 ![](output/01234.png)
+
 ![](output/56789.png)
 
 Boltzmann machines do not perform very well unless constrained. A Restricted Boltzmann Machine (RBM) is created by eliminating connections between the same class (i.e. visible/hidden) neurons. This is equivalent to letting $A=0$ and $B=0$.
