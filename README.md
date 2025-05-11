@@ -5,10 +5,19 @@
 
 Simple C++ implementations of a Hopfield Network with Hebbian learning rules and Generalized Boltzmann Machine, and Restricted Boltzmann Machine with Contrastive Divergence trained on the MNIST dataset.
 
-```[commandline]
-Usage: ./main [OPTIONS]
+## Documentation
 
-Options:
+This project uses CMake. After cloning this repository, run the following to compile.
+```commandline
+mkdir -p build
+cd build
+cmake ..
+make
+```
+
+Then, you can run `./main [OPTIONS]` with the following options:
+
+```[commandline]
   --help                  Show this help message and exit
   --model, -m <type>      Choose model type: 'hopfield', 'boltzmann', or 'rbm' (default: rbm)
   --train, -t <type>      'true' for training, 'false' for inference (default: true)
