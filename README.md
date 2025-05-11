@@ -3,7 +3,7 @@
 | ![](models/food.png) | ![](output/donut.gif)  | ![](output/burger.gif) |
 |----------------------|------------------------|------------------------|
 
-Simple C++ implementations of a Hopfield Network with Hebbian learning rules and Generalized Boltzmann Machine, and Restricted Boltzmann Machine with Contrastive Divergence.
+Simple C++ implementations of a Hopfield Network with Hebbian learning rules and Generalized Boltzmann Machine, and Restricted Boltzmann Machine with Contrastive Divergence trained on the MNIST dataset.
 
 ## Hopfield Network
 
@@ -72,6 +72,10 @@ $$h_j= \begin{cases}
 where $\sigma$ is the sigmoid function and $T$ is a temperature parameter which controls the amount of randomness. As $T\rightarrow0$, the model achieves behaviour similar to a Hopfield network and as $T$ grows, it becomes more random.
 
 ## Restricted Boltzmann Machines
+
+| ![](output/0.png) | ![](output/1.png) | ![](output/2.png) | ![](output/3.png) | ![](output/4.png) |
+|-------------------|-------------------|-------------------|-------------------|-------------------|
+| ![](output/5.png) | ![](output/6.png) | ![](output/7.png) | ![](output/8.png) | ![](output/9.png) |
 
 Boltzmann machines do not perform very well unless constrained. A Restricted Boltzmann Machine (RBM) is created by eliminating connections between the same class (i.e. visible/hidden) neurons. This is equivalent to letting $A=0$ and $B=0$.
 
